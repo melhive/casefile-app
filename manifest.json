@@ -1,0 +1,13 @@
+{
+  "name": "Casefile — Bug Class Reference",
+  "short_name": "Casefile",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0B0E11",
+  "theme_color": "#0B0E11",
+  "description": "Offline reference for IDOR/BOLA/BAC, API issues, XSS, business logic, race conditions, and SSRF, with a per-target recon workspace.",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

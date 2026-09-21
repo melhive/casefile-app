@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casefile — Bug Class Reference &amp; Target Workspace</title>
+<meta name="theme-color" content="#0B0E11">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="brand">
+    <div class="mark">CASEFILE</div>
+    <h1>Bug Class Reference</h1>
+  </div>
+
+  <div class="target-select">
+    <label>Active target</label>
+    <select id="targetSelect"></select>
+    <div class="new-target" id="newTargetBtn">+ New target</div>
+  </div>
+
+  <div class="nav-scroll" id="navScroll"></div>
+</aside>
+
+<main id="main"></main>
+
+<script src="content.js"></script>
+<script src="app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
