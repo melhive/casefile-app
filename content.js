@@ -36,6 +36,50 @@ const GLOBAL_RECON = {
   ]
 };
 
+const CHANGELOG = [
+  {
+    version: "1.3.0",
+    date: "2026-09",
+    changes: [
+      "Target list is now filterable — type in the sidebar filter box once you have several programs saved",
+      "Added a 'Mark as Mastered' toggle on each bug type page, with a checkmark shown in the sidebar for mastered classes"
+    ]
+  },
+  {
+    version: "1.2.0",
+    date: "2026-09",
+    changes: [
+      "Added a boot-sequence loading screen (terminal-style typing lines + progress bar)",
+      "Added an ambient scan-line/vignette overlay across the app for a HUD feel",
+      "Case header now has corner-bracket accents and a stamp-in animation on the severity tag",
+      "Sidebar active item and severity dots now have a subtle glow/pulse animation",
+      "Tabs and buttons now have smooth transitions and press feedback",
+      "Search results fade in with a staggered animation instead of appearing all at once",
+      "Save actions now flash the button briefly to confirm the save landed"
+    ]
+  },
+  {
+    version: "1.1.0",
+    date: "2026-09",
+    changes: [
+      "Added real-world example and impact-tier tabs to every bug type",
+      "Workspace notes now support multiple bug tags and a status field (to-test / in-progress / confirmed / reported / dead-end)",
+      "Notes and file references can now be edited, not just deleted",
+      "Added workspace export/import (backup your target data to a JSON file)",
+      "Added global search across the Reference Library and your workspace",
+      "Each bug page now remembers the last tab you had open",
+      "Target list is now searchable once you have more than a few programs"
+    ]
+  },
+  {
+    version: "1.0.0",
+    date: "2026-09",
+    changes: [
+      "Initial release — 6 bug-type reference pages, global recon checklist, free toolkit list, and per-target workspace"
+    ]
+  }
+];
+
 const TOOLS = {
   title: "Free Toolkit",
   subtitle: "Everything below is free or has a genuinely usable free tier",
@@ -112,7 +156,14 @@ const BUGS = {
       "Header-based overrides: X-Forwarded-For, X-Original-URL, X-Rewrite-URL can sometimes bypass path-based access rules on reverse proxies"
     ],
     tools: ["Burp Repeater for manual swaps", "Autorize (Burp extension) automates the 'replay as lower-priv user' check", "InQL for GraphQL node enumeration"],
-    report: "Endpoint + method, victim account used, exact request showing the swapped ID, response proving unauthorized access, and impact (what data/action was exposed)."
+    report: "Endpoint + method, victim account used, exact request showing the swapped ID, response proving unauthorized access, and impact (what data/action was exposed).",
+    example: "A widely-cited pattern across HackerOne reports: a 'download invoice' feature referencing invoice IDs sequentially, with no check that the invoice belonged to the requesting account — letting any logged-in user download any other customer's billing history by changing one number in the URL.",
+    impact: [
+      "Low: IDOR exposes non-sensitive, already-public-ish data (e.g., another user's display name)",
+      "Medium: exposes personal but not highly sensitive data (email, phone, order history)",
+      "High: exposes sensitive personal or financial data, or allows modifying another user's non-critical settings",
+      "Critical: allows account takeover, exposes payment/financial instruments, or allows modifying another user's critical data (password, permissions, funds)"
+    ]
   },
 
   api: {
@@ -153,7 +204,14 @@ const BUGS = {
       "If rate limiting is IP-based, rotate via X-Forwarded-For header or use multiple session tokens in parallel"
     ],
     tools: ["InQL for GraphQL", "Postman for structured API fuzzing", "Nuclei API templates"],
-    report: "Full request/response pair showing the unexpected field or endpoint accepted, the schema/version involved, and concrete impact (privilege change, data exposure, cost/DoS potential)."
+    report: "Full request/response pair showing the unexpected field or endpoint accepted, the schema/version involved, and concrete impact (privilege change, data exposure, cost/DoS potential).",
+    example: "A common disclosed pattern: a user self-registration endpoint accepted an undocumented 'role' field found only by reading the exposed OpenAPI schema — sending role: \"admin\" during signup granted admin privileges immediately, with no server-side allowlist on which fields could be set.",
+    impact: [
+      "Low: verbose error messages or minor inventory exposure (old API version reachable but no extra access gained)",
+      "Medium: excessive data exposure (API returns more fields than the UI needs, some sensitive)",
+      "High: broken function-level auth allowing access to another tier's data or actions",
+      "Critical: mass assignment or broken auth that grants admin/privileged role or full account control"
+    ]
   },
 
   xss: {
@@ -199,7 +257,14 @@ const BUGS = {
       "If CSP blocks inline scripts, look for 'unsafe-eval', allowed CDNs you can abuse, or a JSONP endpoint on an allowed origin"
     ],
     tools: ["Burp/ZAP for reflection tracing", "Interactsh for blind XSS", "Browser DevTools for tracing DOM sinks"],
-    report: "Injection point, exact payload, context (HTML/attr/JS/URL), proof of execution (screenshot/callback), and whether it's reflected/stored/DOM/blind."
+    report: "Injection point, exact payload, context (HTML/attr/JS/URL), proof of execution (screenshot/callback), and whether it's reflected/stored/DOM/blind.",
+    example: "A frequently-referenced disclosed case: a support-ticket form stored user input without sanitization, and the admin dashboard rendered ticket contents with innerHTML — a blind stored XSS payload fired in the admin's browser session when they opened the ticket, exfiltrating their session cookie via an out-of-band listener.",
+    impact: [
+      "Low: reflected XSS requiring an unusual, hard-to-deliver URL and no session-sensitive action nearby",
+      "Medium: reflected XSS on a page reachable via a normal link, or stored XSS visible only to the submitting user",
+      "High: stored XSS visible to other regular users, enabling session hijacking or actions on their behalf",
+      "Critical: stored or blind XSS reachable by an admin/support agent, enabling full account or panel takeover"
+    ]
   },
 
   bizlogic: {
@@ -241,7 +306,14 @@ const BUGS = {
       "If a limit is tied to email, test whether it's actually enforced on a normalized version of the email (many apps miss + aliasing or dot-variants on Gmail-style addresses)"
     ],
     tools: ["Burp Repeater/Intruder for parameter fuzzing", "Manual multi-account testing (this class is mostly manual reasoning, not payload lists)"],
-    report: "Full step-by-step flow you followed, which step/parameter was abused, expected vs actual outcome, and financial/operational impact."
+    report: "Full step-by-step flow you followed, which step/parameter was abused, expected vs actual outcome, and financial/operational impact.",
+    example: "A commonly-cited disclosed pattern: an e-commerce checkout calculated the final price client-side in JavaScript and trusted the submitted total on the server, so intercepting and rewriting the 'total' field before submission let an attacker buy items at an arbitrary price.",
+    impact: [
+      "Low: minor workflow inconsistency with no financial/operational effect (e.g., a step can be skipped but changes nothing)",
+      "Medium: limited abuse potential (one extra use of a coupon, a small discount stack)",
+      "High: repeatable financial loss or limit bypass (unlimited free trials, stacked discounts) at meaningful scale",
+      "Critical: large-scale financial fraud potential (arbitrary pricing, unlimited fund creation, payment bypass)"
+    ]
   },
 
   race: {
@@ -281,7 +353,14 @@ const BUGS = {
       "If a naive lock is present, try racing a related-but-different endpoint that touches the same underlying resource without the same lock"
     ],
     tools: ["Turbo Intruder (free Burp extension) — the standard tool for this class", "Custom script with async HTTP requests as a fallback"],
-    report: "Endpoint, exact concurrency technique used, number of requests fired vs number that succeeded, and the resulting inconsistent state as proof."
+    report: "Endpoint, exact concurrency technique used, number of requests fired vs number that succeeded, and the resulting inconsistent state as proof.",
+    example: "A well-known disclosed pattern: a 'redeem gift card' endpoint checked the card's remaining balance, then deducted it in a separate write — firing ~20 simultaneous redemption requests via a single-packet attack let each one read the balance before any deduction landed, redeeming the same card many times over.",
+    impact: [
+      "Low: race condition exists but has no meaningful effect (e.g., a counter briefly off by one, self-corrects)",
+      "Medium: minor duplicate action (double-liked post, harmless duplicate notification)",
+      "High: duplicate consumption of a limited resource (coupon, credit, one-time action) at real cost",
+      "Critical: direct financial loss or security-control bypass (double-spending funds, bypassing a uniqueness/security check like 2FA enrollment)"
+    ]
   },
 
   ssrf: {
@@ -324,6 +403,13 @@ const BUGS = {
       "If cloud metadata IP is explicitly blocked, check for the newer IMDSv2-style token requirement bypass or alternate metadata hostnames (e.g., link-local IPv6 metadata address)"
     ],
     tools: ["Interactsh for blind confirmation", "Burp Collaborator alternative via self-hosted Interactsh server", "curl for manual scheme/encoding tests"],
-    report: "The vulnerable feature/endpoint, exact payload URL used, evidence of internal reach (data returned or OOB callback), and impact (credential leak, internal service access, port scan capability)."
+    report: "The vulnerable feature/endpoint, exact payload URL used, evidence of internal reach (data returned or OOB callback), and impact (credential leak, internal service access, port scan capability).",
+    example: "A widely-referenced disclosed pattern: an 'import avatar from URL' feature fetched attacker-supplied URLs server-side with no restriction on destination — pointing it at the cloud metadata endpoint returned temporary IAM credentials for the hosting instance, which were then usable against the provider's API.",
+    impact: [
+      "Low: SSRF confirmed via timing/OOB only, no data or internal access demonstrated",
+      "Medium: reaches internal services but no sensitive data or further access obtained",
+      "High: reads internal service data or reaches restricted internal endpoints",
+      "Critical: leaks cloud credentials/metadata or enables further compromise of internal infrastructure"
+    ]
   }
 };

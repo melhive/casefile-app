@@ -10,6 +10,13 @@
 </head>
 <body>
 
+<div id="loadingScreen">
+  <div class="loader-mark">CASEFILE // BUG CLASS REFERENCE</div>
+  <div class="loader-lines" id="loaderLines"></div>
+  <div class="loader-bar"><div class="loader-bar-fill" id="loaderBarFill"></div></div>
+</div>
+<div id="scanOverlay"></div>
+
 <aside class="sidebar">
   <div class="brand">
     <div class="mark">CASEFILE</div>
@@ -17,7 +24,10 @@
   </div>
 
   <div class="target-select">
+    <label>Search</label>
+    <input type="text" id="globalSearch" placeholder="Search payloads, notes, files…" style="width:100%;background:var(--panel-raised);border:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:13px;padding:7px 9px;border-radius:4px;margin-bottom:12px">
     <label>Active target</label>
+    <input type="text" id="targetFilter" placeholder="Filter targets…" style="width:100%;background:var(--panel-raised);border:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:12.5px;padding:6px 9px;border-radius:4px;margin-bottom:6px">
     <select id="targetSelect"></select>
     <div class="new-target" id="newTargetBtn">+ New target</div>
   </div>
@@ -35,6 +45,48 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   });
 }
+
+// Boot sequence loading screen
+(function bootSequence() {
+  const lines = [
+    'INITIALIZING CASEFILE…',
+    'MOUNTING LOCAL ARCHIVE (INDEXEDDB)…',
+    'LOADING REFERENCE LIBRARY (6 CLASSES)…',
+    'ACCESS GRANTED'
+  ];
+  const el = document.getElementById('loaderLines');
+  const bar = document.getElementById('loaderBarFill');
+  const screen = document.getElementById('loadingScreen');
+  let i = 0;
+
+  function typeLine(text, cb) {
+    const div = document.createElement('div');
+    el.appendChild(div);
+    let j = 0;
+    const iv = setInterval(() => {
+      div.textContent = text.slice(0, j + 1);
+      j++;
+      if (j >= text.length) {
+        clearInterval(iv);
+        cb && cb();
+      }
+    }, 14);
+  }
+
+  function next() {
+    if (i >= lines.length) {
+      bar.style.width = '100%';
+      setTimeout(() => {
+        screen.classList.add('hidden');
+        setTimeout(() => screen.remove(), 450);
+      }, 220);
+      return;
+    }
+    bar.style.width = Math.round(((i + 0.5) / lines.length) * 100) + '%';
+    typeLine(lines[i], () => { i++; setTimeout(next, 120); });
+  }
+  next();
+})();
 </script>
 </body>
 </html>
